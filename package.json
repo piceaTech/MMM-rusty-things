@@ -1,0 +1,16 @@
+{
+  "name": "rusty-things",
+  "version": "0.1.0",
+  "description": "Node Wrapper around rusty-things",
+  "main": "lib/index.js",
+  "author": "Felix Fichte <dev@spruce.de>",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.0.0",
+    "neon-cli": "^0.2.0"
+  },
+  "scripts": {
+    "install": "echo 'should call neon build'",
+    "build": "npm install && somasdasd"
+  }
+}
