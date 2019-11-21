@@ -1,6 +1,6 @@
 
 
-Module.register("rusty-things",{
+Module.register("MMM-rusty-things",{
   // Default module config.
   defaults: {
     maxEntriesToShow: 15
