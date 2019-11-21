@@ -10,5 +10,11 @@
             <td>No Entries found for today. Good Job!</td>
         </tr>
         {% endfor %}
+        {% if hasMoreEntries %}
+        <tr>
+            <td></td>
+            <td>(There are more entries …)</td>
+        </tr>
+        {% endif %}
     </tbody>
 </table>

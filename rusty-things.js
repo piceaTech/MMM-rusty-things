@@ -3,7 +3,7 @@
 Module.register("rusty-things",{
   // Default module config.
   defaults: {
-    
+    maxEntriesToShow: 15
   },
   todayEntries: [],
   tomorrowEntries: [],
@@ -23,7 +23,8 @@ Module.register("rusty-things",{
         tomorrow: this.tomorrowEntries.length,
         inbox: this.inboxEntries.length,
       },
-      todayEntries: this.todayEntries.slice(0,20),
+      todayEntries: this.todayEntries.slice(0, this.config.maxEntriesToShow),
+      hasMoreEntries: this.todayEntries.length > this.config.maxEntriesToShow
     }
   },
   start: function(){
