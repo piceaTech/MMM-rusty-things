@@ -42,7 +42,7 @@ pub struct Task {
   #[serde(rename = "pr", default, deserialize_with = "deserialize_some")]
   pub project_ids: Option<Option<Vec<String>>>,
   #[serde(rename = "dds", default, deserialize_with = "deserialize_some")]
-  pub unknown17: Option<Option<bool>>,
+  pub unknown17: Option<Option<i32>>,
   #[serde(rename = "icsd", default, deserialize_with = "deserialize_some")]
   pub unknown18: Option<Option<f64>>,
   #[serde(rename = "icp", default, deserialize_with = "deserialize_some")]
