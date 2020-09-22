@@ -3,6 +3,9 @@
 native/*.node
 native/pi_deps
 
+# Downloaded history
+downloads
+
 
 # https://github.com/github/gitignore/blob/master/Node.gitignore
 # Logs
