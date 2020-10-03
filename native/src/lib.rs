@@ -50,6 +50,22 @@ export! {
   fn parseFile(file_contents: String) -> bool {
     parse_file(&file_contents).unwrap()
   }
+  fn get_canonical_id(input: String) -> String {
+    sql::get_canonical_id(input)
+  }
+  fn get_sql_uuid(dirname: String, input: String) -> String {
+    load_env(&dirname);
+    println!("dirname: {:}", &dirname);
+    let connection = establish_connection().expect("COnnection should be established");
+    use sql::task::tasks::dsl::*;
+    let db_entries = tasks
+        .select(sql::canonical_id(uuid))
+        .filter(title.eq(input))
+        .load::<String>(&connection)
+        .expect("Error loading Task");
+        println!("db_entries: {:?}", db_entries);
+        "OK".to_string()
+  }
 }
 
 fn load_env(dirname: &str) {
@@ -113,17 +129,18 @@ fn insert_entries_into_db(
 ) -> Result<(), Box<dyn std::error::Error>> {
     for items_hash in resp.items.into_iter() {
         for (key, value) in items_hash.into_iter() {
+            let canonical = sql::get_canonical_id(key);
             if !value.item_type.starts_with("Task") {
                 continue;
             }
             if value.item.is_none() {
                 let item: Task =
-                    serde_json::from_str(&format!("{}{}{}", r#"{"uuid":""#, key, r#""}"#)).unwrap();
+                    serde_json::from_str(&format!("{}{}{}", r#"{"uuid":""#, canonical, r#""}"#)).unwrap();
                 delete(&connection, item)?;
                 continue;
             }
             let mut item = value.item.clone().unwrap();
-            item.uuid = Some(key.to_owned());
+            item.uuid = Some(canonical.to_owned());
             if item.is_empty() {
                 delete(&connection, item)?;
             } else {
@@ -176,6 +193,7 @@ fn delete(connection: &SqliteConnection, item: Task) -> Result<(), Box<dyn std::
 fn run_embedded_migrations(connection: &SqliteConnection) -> Result<(), Box<dyn std::error::Error>> {
     embed_migrations!("migrations");
     embedded_migrations::run(connection)?;
+    println!("Ran migrations");
     Ok(())
 }
 
@@ -183,6 +201,7 @@ fn establish_connection() -> Result<SqliteConnection, Box<dyn std::error::Error>
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let con = SqliteConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url));
+    sql::register_sql_functions(&con);
     run_embedded_migrations(&con)?;
     Ok(con)
 }

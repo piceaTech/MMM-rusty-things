@@ -50,8 +50,8 @@ impl From<types::task::Task> for Task {
   fn from(value: types::task::Task) -> Self{
     
     Self{
-      uuid: value.uuid.expect("Creating a new task without a uuid"),
-      title: value.title.expect("Creating a new task without a title").expect("Creating a new task without a title, 2 stage"),
+      uuid: value.uuid.clone().expect("Creating a new task without a uuid"),
+      title: value.title.expect(&format!("Creating a new task without a title {:?}", value.uuid.clone())).expect(&format!("Creating a new task without a title, 2 stage {:?}", value.uuid.clone())),
       trashed: value.trashed.expect("Creating a new task without trashed"),
       start: value.start.expect("Creating a new task without start"),
       status: value.status.expect("Creating a new task without status"),
