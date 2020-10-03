@@ -62,11 +62,11 @@ fn load_env(dirname: &str) {
     database_url.push(env::var("DATABASE_URL").expect("DATABASE_URL must be set"));
     env::set_var("DATABASE_URL", database_url.to_str().unwrap());
 }
-fn parse_file(file_contents: &str) -> Result<bool, Box<std::error::Error>> {
+fn parse_file(file_contents: &str) -> Result<bool, Box<dyn std::error::Error>> {
     let response: Response = serde_json::from_str(file_contents)?;
     Ok(true)
 }
-fn update_db() -> Result<u32, Box<std::error::Error>> {
+fn update_db() -> Result<u32, Box<dyn std::error::Error>> {
     println!("Starting to Request history.");
 
     let connection = establish_connection()?;
@@ -110,7 +110,7 @@ fn update_db() -> Result<u32, Box<std::error::Error>> {
 fn insert_entries_into_db(
     connection: &SqliteConnection,
     resp: Response,
-) -> Result<(), Box<std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>> {
     for items_hash in resp.items.into_iter() {
         for (key, value) in items_hash.into_iter() {
             if !value.item_type.starts_with("Task") {
@@ -137,7 +137,7 @@ fn insert_entries_into_db(
 fn insert_or_update(
     connection: &SqliteConnection,
     item: Task,
-) -> Result<(), Box<std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>> {
     use sql::task::tasks::dsl::*;
     let db_entry = tasks
         .filter(
@@ -160,7 +160,7 @@ fn insert_or_update(
     Ok(())
 }
 
-fn delete(connection: &SqliteConnection, item: Task) -> Result<(), Box<std::error::Error>> {
+fn delete(connection: &SqliteConnection, item: Task) -> Result<(), Box<dyn std::error::Error>> {
     use sql::task::tasks::dsl::*;
     diesel::delete(
         tasks.filter(
@@ -173,13 +173,13 @@ fn delete(connection: &SqliteConnection, item: Task) -> Result<(), Box<std::erro
     Ok(())
 }
 
-fn run_embedded_migrations(connection: &SqliteConnection) -> Result<(), Box<std::error::Error>> {
+fn run_embedded_migrations(connection: &SqliteConnection) -> Result<(), Box<dyn std::error::Error>> {
     embed_migrations!("migrations");
     embedded_migrations::run(connection)?;
     Ok(())
 }
 
-fn establish_connection() -> Result<SqliteConnection, Box<std::error::Error>> {
+fn establish_connection() -> Result<SqliteConnection, Box<dyn std::error::Error>> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let con = SqliteConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url));
@@ -204,7 +204,7 @@ fn get_server_index_from_db(connection: &SqliteConnection) -> u32 {
 fn write_server_index_to_db(
     connection: &SqliteConnection,
     index: u32,
-) -> Result<(), Box<std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>> {
     use sql::meta::meta::dsl::*;
     let results = meta
         .filter(key.eq("serverIndex"))
@@ -231,7 +231,7 @@ fn get_hist_id() -> String {
     env::var("HISTORY_ID").expect("HISTORY_ID must be set")
 }
 
-fn get_today_tasks() -> Result<Vec<sql::task::Task>, Box<std::error::Error>> {
+fn get_today_tasks() -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error>> {
     let connection = establish_connection()?;
     use sql::task::tasks::dsl::*;
     let db_entries = tasks
@@ -246,7 +246,7 @@ fn get_today_tasks() -> Result<Vec<sql::task::Task>, Box<std::error::Error>> {
     Ok(db_entries)
 }
 
-fn get_tomorrow_tasks() -> Result<Vec<sql::task::Task>, Box<std::error::Error>> {
+fn get_tomorrow_tasks() -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error>> {
     let d = (SystemTime::now() + Duration::new(5 * 60 * 60, 0))
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -265,7 +265,7 @@ fn get_tomorrow_tasks() -> Result<Vec<sql::task::Task>, Box<std::error::Error>> 
     Ok(db_entries)
 }
 
-fn get_inbox_tasks() -> Result<Vec<sql::task::Task>, Box<std::error::Error>> {
+fn get_inbox_tasks() -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error>> {
     let connection = establish_connection()?;
     use sql::task::tasks::dsl::*;
     let db_entries = tasks
