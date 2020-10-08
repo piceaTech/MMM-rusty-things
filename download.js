@@ -27,7 +27,10 @@ async function fetchAll() {
 
 async function parseAll() {
   let dir = await fs.readdir("./downloads");
-  for (const fileName of dir) {
+  for (const fileName of dir.reverse()) {
+    if (fileName.startsWith(".") || !fileName.endsWith(".json")) {
+      continue;
+    }
     console.log(`Parsing File: ${fileName}`);
     addon.parseFile(await fs.readFile(`./downloads/${fileName}`));
   }

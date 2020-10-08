@@ -93,7 +93,7 @@ pub struct NoteStruct {
     #[serde(rename = "_t", default, deserialize_with = "deserialize_some")]
     pub tag: Option<Option<String>>,
     #[serde(rename = "ch", default, deserialize_with = "deserialize_some")]
-    pub unknown20: Option<Option<i32>>,
+    pub unknown20: Option<Option<i64>>,
     #[serde(rename = "t", default, deserialize_with = "deserialize_some")]
     pub unknown21: Option<Option<i32>>,
     #[serde(rename = "v", default, deserialize_with = "deserialize_some")]
