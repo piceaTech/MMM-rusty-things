@@ -99,7 +99,7 @@ pub struct NoteStruct {
     #[serde(rename = "v", default, deserialize_with = "deserialize_some")]
     pub value: Option<Option<String>>,
     #[serde(rename = "ps", default, deserialize_with = "deserialize_some")]
-    pub update: Option<Vec<NoteLine>>,
+    pub update: Option<Option<Vec<NoteLine>>>,
 }
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct NoteLine {
@@ -108,7 +108,7 @@ pub struct NoteLine {
     #[serde(rename = "r", default, deserialize_with = "deserialize_some")]
     pub unknown23: Option<Option<String>>,
     #[serde(rename = "ch", default, deserialize_with = "deserialize_some")]
-    pub change_time: Option<Option<i32>>,
+    pub change_time: Option<Option<i64>>,
     #[serde(rename = "l", default, deserialize_with = "deserialize_some")]
     pub line: Option<Option<i32>>,
 }

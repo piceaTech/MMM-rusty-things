@@ -43,6 +43,11 @@ export! {
       load_env(&dirname);
       update_db().unwrap()
   }
+  fn getLastID(dirname: String) -> u32 {
+    load_env(&dirname);
+    let connection = establish_connection().unwrap();
+    get_server_index_from_db(&connection)
+  }
   fn getInboxEntries(dirname: String) -> Vec<sql::task::Task> {
     load_env(&dirname);
     get_inbox_tasks().unwrap()
@@ -135,7 +140,8 @@ fn insert_entries_into_db(
             }
             if value.item.is_none() {
                 let item: Task =
-                    serde_json::from_str(&format!("{}{}{}", r#"{"uuid":""#, canonical, r#""}"#)).unwrap();
+                    serde_json::from_str(&format!("{}{}{}", r#"{"uuid":""#, canonical, r#""}"#))
+                        .unwrap();
                 delete(&connection, item)?;
                 continue;
             }
@@ -190,7 +196,9 @@ fn delete(connection: &SqliteConnection, item: Task) -> Result<(), Box<dyn std::
     Ok(())
 }
 
-fn run_embedded_migrations(connection: &SqliteConnection) -> Result<(), Box<dyn std::error::Error>> {
+fn run_embedded_migrations(
+    connection: &SqliteConnection,
+) -> Result<(), Box<dyn std::error::Error>> {
     embed_migrations!("migrations");
     embedded_migrations::run(connection)?;
     println!("Ran migrations");
