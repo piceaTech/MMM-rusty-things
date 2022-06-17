@@ -15,7 +15,7 @@ crate-type = ["cdylib"]
 neon-build = "0.2.0"
 
 [dependencies]
-diesel = { version = "1.4.0", features = ["sqlite"] }
+diesel = { version = "1.4.6", features = ["sqlite"] }
 diesel_migrations = "1.4.0"
 
 neon = "0.3.1"
