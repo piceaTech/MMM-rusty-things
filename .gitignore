@@ -1,7 +1,7 @@
 .env
 *.sqlite3
-native/*.node
-native/pi_deps
+*.node
+pi_deps
 
 # Downloaded history
 downloads
@@ -99,9 +99,9 @@ typings/
 
 
 ## Neon gitignore
-native/target
-native/index.node
-native/artifacts.json
+target
+index.node
+artifacts.json
 **/*~
 **/node_modules
 **/.DS_Store

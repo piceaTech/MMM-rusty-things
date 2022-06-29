@@ -1,25 +1,32 @@
 [package]
-name = "node-rusty-things"
+name = "rusty-things"
 version = "0.1.0"
 authors = ["Felix Fichte <dev@spruce.de>"]
 license = "MIT"
-build = "build.rs"
-exclude = ["artifacts.json", "index.node"]
 edition = "2018"
+exclude = ["index.node"]
 
 [lib]
-name = "node_rusty_things"
 crate-type = ["cdylib"]
 
-[build-dependencies]
-neon-build = "0.2.0"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies.neon]
+version = "0.10"
+default-features = false
+features = ["napi-6"]
+
+
 
 [dependencies]
+
+
+
 diesel = { version = "1.4.0", features = ["sqlite"] }
 diesel_migrations = "1.4.0"
 
-neon = "0.3.1"
-neon-serde = "0.3.0"
+neon-serde2 = {path = "/Users/spruce/Code/OSS/neon-serde", version = "0.10.0"}
 
 
 serde = { version = "1.0", features = ["derive"] }

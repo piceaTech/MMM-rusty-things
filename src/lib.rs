@@ -2,7 +2,7 @@
 extern crate neon;
 
 #[macro_use]
-extern crate neon_serde;
+extern crate neon_serde2 as neon_serde;
 
 #[macro_use]
 extern crate diesel;
@@ -26,10 +26,10 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 mod sql;
 mod types;
 
-#[no_mangle]
-pub extern "C" fn node_addon_init() {
-    __LOAD_NEON_MODULE();
-}
+// #[no_mangle]
+// pub extern "C" fn node_addon_init() {
+//     __LOAD_NEON_MODULE();
+// }
 export! {
   fn getTodayEntries(dirname: String) -> Vec<sql::task::Task> {
     load_env(&dirname);

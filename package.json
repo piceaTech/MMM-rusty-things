@@ -1,19 +1,18 @@
 {
   "name": "rusty-things",
   "version": "0.1.0",
-  "description": "Node Wrapper around rusty-things",
-  "main": "lib/index.js",
-  "author": "Felix Fichte <dev@spruce.de>",
-  "license": "MIT",
-  "dependencies": {
-    "base-58": "0.0.1",
-    "dotenv": "^8.0.0",
-    "neon-cli": "^0.2.0",
-    "node-fetch": "^2.6.1",
-    "sha1": "^1.1.1"
-  },
+  "description": "",
+  "main": "index.node",
   "scripts": {
-    "install": "echo 'should call neon build'",
-    "build": "npm install && somasdasd"
+    "build": "cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics",
+    "build-debug": "npm run build --",
+    "build-release": "npm run build -- --release",
+    "install": "npm run build-release",
+    "test": "cargo test"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "cargo-cp-artifact": "^0.1"
   }
 }
