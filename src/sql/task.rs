@@ -51,16 +51,16 @@ impl From<types::task::Task> for Task {
     
     Self{
       uuid: value.uuid.clone().expect("Creating a new task without a uuid"),
-      title: value.title.expect(&format!("Creating a new task without a title {:?}", value.uuid.clone())).expect(&format!("Creating a new task without a title, 2 stage {:?}", value.uuid.clone())),
-      trashed: value.trashed.expect("Creating a new task without trashed"),
-      start: value.start.expect("Creating a new task without start"),
-      status: value.status.expect("Creating a new task without status"),
+      title: value.title.unwrap_or(Some("".to_string())).unwrap_or("".to_string()),
+      trashed: value.trashed.unwrap_or_default(),
+      start: value.start.unwrap_or_default(),
+      status: value.status.unwrap_or_default(),
 
-      type_project: value.type_project.expect("Creating a new task without type_project"),
+      type_project: value.type_project.unwrap_or_default(),
       today_index_reference_date: value.today_index_reference_date.unwrap_or(None),
-      today_index: value.today_index.expect("Creating a new task without today_index"),
-      index: value.index.expect("Creating a new task without today_index"),
-      completion_date: value.completion_date.expect("Creating a new task without completion_date"),
+      today_index: value.today_index.unwrap_or_default(),
+      index: value.index.unwrap_or_default(),
+      completion_date: value.completion_date.unwrap_or_default(),
     }
 
     
