@@ -11,7 +11,7 @@ The module looks like this:
 
 # TODO
 
-- Publish version of neon-serde2 that works (hacked together)
+- Publish version of neon-serde2 that works (neon10.1, unwrap instead of ?)
 - 
 
 
@@ -29,7 +29,7 @@ Edit the `.env` and insert your hist_id.
 
 After that either compile the native module locally on the pi or cross-compile from your desktop.
 
-## Cross-compilation (e.g. from x64 to arm)
+## Cross-compilation (x64 to arm)
 1. Build the build-Container
   1. `git clone https://github.com/piceaTech/rust-on-raspberry-docker`
   1. `cd rust-on-raspberry-docker`
@@ -43,6 +43,32 @@ After that either compile the native module locally on the pi or cross-compile f
 1. Deploy this artifact to the pi!
 1. Done
 
+## Cross-compilation (arm macos to arm linux)
+
+1. Install cross compiler needed: `https://github.com/messense/homebrew-macos-cross-toolchains`
+  1. `brew tap messense/macos-cross-toolchains`
+  1. `brew install armv7-unknown-linux-gnueabihf`
+1. Add rust target
+  1. `rustup target add arm-unknown-linux-gnueabihf`
+1. Copy the following dependencies as `.deb`s into `/pi_deps`
+  1. ssl: http://ftp.debian.org/debian/pool/main/o/openssl1.0/libssl1.0-dev_1.0.2r-1~deb9u1_armhf.deb
+  1. sqlite: http://ftp.debian.org/debian/pool/main/s/sqlite3/libsqlite3-dev_3.16.2-5+deb9u1_armhf.deb
+  1. gcc: http://ftp.debian.org/debian/pool/main/g/gcc-12/libgcc-12-dev_12.1.0-2_armhf.deb
+1. unpack all deps into folders
+  ```
+    cd pi_deps
+    ar x libssl1.0-dev_1.0.2r-1_deb9u1_armhf.deb
+    tar -xvf data.tar.xz
+    ar x libsqlite3-dev_3.16.2-5+deb9u1_armhf.deb
+    tar -xvf data.tar.xz
+    ar x libgcc-12-dev_12.1.0-2_armhf.deb
+    tar -xvf data.tar.xz
+  ```
+1. copy opensslconf.h into correct folder
+  `cp usr/include/arm-linux-gnueabihf/openssl/opensslconf.h usr/include/openssl/`
+1. run `./build-pi.sh`. This should create a `index.node` which should be compatible with arm.
+1. Deploy this artifact to the pi!
+1. Done
 
 
 

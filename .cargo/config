@@ -1,3 +1,0 @@
-[target.arm-unknown-linux-gnueabihf]
-
-rustflags = ["-C", "link-arg=-Wl,-init=node_addon_init"]
