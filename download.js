@@ -1,7 +1,6 @@
-let fetch = require("node-fetch");
 let fs = require("fs").promises;
 
-var addon = require("./native");
+var addon = require("./index.node");
 
 let curIndex = 0;
 
@@ -37,5 +36,5 @@ async function parseAll() {
 
   // let rust read all stuff
 }
-// fetchAll();
+fetchAll();
 parseAll();
