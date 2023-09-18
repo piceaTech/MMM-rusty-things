@@ -26,7 +26,7 @@ features = ["napi-6"]
 diesel = { version = "1.4.0", features = ["sqlite"] }
 diesel_migrations = "1.4.0"
 
-neon-serde2 = {path = "/Users/spruce/Code/OSS/neon-serde", version = "0.10.0"}
+neon-serde2 = {path = "../neon-serde", version = "0.10.0"}
 
 
 serde = { version = "1.0", features = ["derive"] }
