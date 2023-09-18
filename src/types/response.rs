@@ -22,5 +22,6 @@ pub struct ItemWrapper {
     #[serde(rename = "e")]
     pub entity: String,
     #[serde(rename = "t")]
-    pub t: u8,
+    // 0 = inser, 1 = edit, 2 = delete
+    pub operation_type: u8,
 }

@@ -6,11 +6,11 @@ extern crate neon_serde2 as neon_serde;
 
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate diesel_migrations;
 use diesel::insert_into;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
+use diesel_migrations::EmbeddedMigrations;
+use diesel_migrations::{embed_migrations, MigrationHarness};
 
 extern crate dotenv;
 
@@ -45,8 +45,8 @@ export! {
   }
   fn getLastID(dirname: String) -> u32 {
     load_env(&dirname);
-    let connection = establish_connection().unwrap();
-    get_server_index_from_db(&connection)
+    let mut connection = establish_connection().unwrap();
+    get_server_index_from_db(&mut connection)
   }
   fn getInboxEntries(dirname: String) -> Vec<sql::task::Task> {
     load_env(&dirname);
@@ -61,12 +61,12 @@ export! {
   fn get_sql_uuid(dirname: String, input: String) -> String {
     load_env(&dirname);
     println!("dirname: {:}", &dirname);
-    let connection = establish_connection().expect("COnnection should be established");
+    let mut connection = establish_connection().expect("COnnection should be established");
     use sql::task::tasks::dsl::*;
     let db_entries = tasks
         .select(sql::canonical_id(uuid))
         .filter(title.eq(input))
-        .load::<String>(&connection)
+        .load::<String>(&mut connection)
         .expect("Error loading Task");
         println!("db_entries: {:?}", db_entries);
         "OK".to_string()
@@ -83,15 +83,17 @@ fn load_env(dirname: &str) {
     database_url.push(env::var("DATABASE_URL").expect("DATABASE_URL must be set"));
     env::set_var("DATABASE_URL", database_url.to_str().unwrap());
 }
-fn parse_file(file_contents: &str) -> Result<bool, Box<dyn std::error::Error>> {
+fn parse_file(
+    file_contents: &str,
+) -> Result<bool, Box<dyn std::error::Error + Send + Sync + 'static>> {
     let _response: Response = serde_json::from_str(file_contents)?;
     Ok(true)
 }
-fn update_db() -> Result<u32, Box<dyn std::error::Error>> {
+fn update_db() -> Result<u32, Box<dyn std::error::Error + Send + Sync + 'static>> {
     println!("Starting to Request history.");
 
-    let connection = establish_connection()?;
-    let mut index = get_server_index_from_db(&connection);
+    let mut connection = establish_connection()?;
+    let mut index = get_server_index_from_db(&mut connection);
     let hist_id = get_hist_id();
 
     let client = reqwest::Client::new();
@@ -114,8 +116,8 @@ fn update_db() -> Result<u32, Box<dyn std::error::Error>> {
         index += resp.items.len() as u32;
 
         let current_item_index = resp.current_item_index;
-        insert_entries_into_db(&connection, resp)?;
-        write_server_index_to_db(&connection, index)?;
+        insert_entries_into_db(&mut connection, resp)?;
+        write_server_index_to_db(&mut connection, index)?;
 
         if index == current_item_index {
             println!(
@@ -129,9 +131,9 @@ fn update_db() -> Result<u32, Box<dyn std::error::Error>> {
 }
 
 fn insert_entries_into_db(
-    connection: &SqliteConnection,
+    connection: &mut SqliteConnection,
     resp: Response,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     for items_hash in resp.items.into_iter() {
         for (key, value) in items_hash.into_iter() {
             let canonical = sql::get_canonical_id(key);
@@ -142,17 +144,15 @@ fn insert_entries_into_db(
                 let item: Task =
                     serde_json::from_str(&format!("{}{}{}", r#"{"uuid":""#, canonical, r#""}"#))
                         .unwrap();
-                delete(&connection, item)?;
+                delete(connection, item)?;
                 continue;
             }
             let mut item = value.item.clone().unwrap();
             item.uuid = Some(canonical.to_owned());
-            if item.is_empty()
-                && (value.entity == "Task2" || value.entity == "Task3" || value.entity == "Task4")
-            {
-                delete(&connection, item)?;
+            if value.operation_type == 2 {
+                delete(connection, item)?;
             } else {
-                insert_or_update(&connection, item)?;
+                insert_or_update(connection, item)?;
             }
         }
     }
@@ -160,9 +160,9 @@ fn insert_entries_into_db(
 }
 
 fn insert_or_update(
-    connection: &SqliteConnection,
+    connection: &mut SqliteConnection,
     item: Task,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     use sql::task::tasks::dsl::*;
     let db_entry = tasks
         .filter(
@@ -185,7 +185,10 @@ fn insert_or_update(
     Ok(())
 }
 
-fn delete(connection: &SqliteConnection, item: Task) -> Result<(), Box<dyn std::error::Error>> {
+fn delete(
+    connection: &mut SqliteConnection,
+    item: Task,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     use sql::task::tasks::dsl::*;
     diesel::delete(
         tasks.filter(
@@ -198,25 +201,26 @@ fn delete(connection: &SqliteConnection, item: Task) -> Result<(), Box<dyn std::
     Ok(())
 }
 
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 fn run_embedded_migrations(
-    connection: &SqliteConnection,
-) -> Result<(), Box<dyn std::error::Error>> {
-    embed_migrations!("migrations");
-    embedded_migrations::run(connection)?;
+    connection: &mut SqliteConnection,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    connection.run_pending_migrations(MIGRATIONS)?;
     println!("Ran migrations");
     Ok(())
 }
 
-fn establish_connection() -> Result<SqliteConnection, Box<dyn std::error::Error>> {
+fn establish_connection(
+) -> Result<SqliteConnection, Box<dyn std::error::Error + Send + Sync + 'static>> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let con = SqliteConnection::establish(&database_url)
+    let mut con = SqliteConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url));
-    sql::register_sql_functions(&con);
-    run_embedded_migrations(&con)?;
+    sql::register_sql_functions(&mut con);
+    run_embedded_migrations(&mut con)?;
     Ok(con)
 }
 
-fn get_server_index_from_db(connection: &SqliteConnection) -> u32 {
+fn get_server_index_from_db(connection: &mut SqliteConnection) -> u32 {
     use sql::meta::meta::dsl::*;
     let results = meta
         .filter(key.eq("serverIndex"))
@@ -231,9 +235,9 @@ fn get_server_index_from_db(connection: &SqliteConnection) -> u32 {
 }
 
 fn write_server_index_to_db(
-    connection: &SqliteConnection,
+    connection: &mut SqliteConnection,
     index: u32,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     use sql::meta::meta::dsl::*;
     let results = meta
         .filter(key.eq("serverIndex"))
@@ -260,27 +264,49 @@ fn get_hist_id() -> String {
     env::var("HISTORY_ID").expect("HISTORY_ID must be set")
 }
 
-fn get_today_tasks() -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error>> {
-    let connection = establish_connection()?;
+fn get_today_tasks(
+) -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    let mut connection = establish_connection()?;
     use sql::task::tasks::dsl::*;
+    let today = get_today_0_0_timestamp();
     let db_entries = tasks
         .filter(trashed.eq(false))
         .filter(type_project.eq(0))
         .filter(start.eq(1))
         .filter(status.eq(0))
         .filter(today_index_reference_date.is_not_null())
+        // .filter(today_index_reference_date.ne("asd").and(start_bucket.ne(1)))
         .order((today_index_reference_date.desc(), today_index.asc()))
-        .load::<sql::task::Task>(&connection)
+        .load::<sql::task::Task>(&mut connection)
         .expect("Error loading Task");
+    // select *  from TMTask where
+    // -- select title, trashed, type, start, status, todayIndexReferenceDate, todayIndex, startBucket,  userModificationDate from TMTask where
+    // trashed = false
+    //  and "type" = 0
+    //  and start = 1
+    //  and status=0
+    //  and todayIndexReferenceDate is not null
+    //  and not (todayIndexReferenceDate = 132618496 and startBucket = 1)
+    // order by todayIndexReferenceDate desc,  todayIndex asc
+    // ;
+
+    // select *  from TMTask where
+    // trashed = false
+    //  and "type" = 0
+    //  and start = 1
+    //  and status=0
+    //  and (todayIndexReferenceDate = 132618496 and startBucket = 1)
+    // order by todayIndexReferenceDate desc,  todayIndex asc
     Ok(db_entries)
 }
 
-fn get_tomorrow_tasks() -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error>> {
+fn get_tomorrow_tasks(
+) -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error + Send + Sync + 'static>> {
     let d = (SystemTime::now() + Duration::new(5 * 60 * 60, 0))
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_secs();
-    let connection = establish_connection()?;
+    let mut connection = establish_connection()?;
     use sql::task::tasks::dsl::*;
     let db_entries = tasks
         .filter(trashed.eq(false))
@@ -289,13 +315,14 @@ fn get_tomorrow_tasks() -> Result<Vec<sql::task::Task>, Box<dyn std::error::Erro
         .filter(status.eq(0))
         .filter(today_index_reference_date.lt(d as f64))
         .order((today_index_reference_date.desc(), today_index.asc()))
-        .load::<sql::task::Task>(&connection)
+        .load::<sql::task::Task>(&mut connection)
         .expect("Error loading Task");
     Ok(db_entries)
 }
 
-fn get_inbox_tasks() -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error>> {
-    let connection = establish_connection()?;
+fn get_inbox_tasks(
+) -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    let mut connection = establish_connection()?;
     use sql::task::tasks::dsl::*;
     let db_entries = tasks
         .filter(trashed.eq(false))
@@ -303,7 +330,22 @@ fn get_inbox_tasks() -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error>>
         .filter(start.eq(0))
         .filter(status.eq(0))
         .order(index.desc())
-        .load::<sql::task::Task>(&connection)
+        .load::<sql::task::Task>(&mut connection)
         .expect("Error loading Task");
     Ok(db_entries)
+}
+
+fn get_today_0_0_timestamp() -> i64 {
+    use chrono::prelude::*;
+
+    let utc: DateTime<Utc> = Utc::now();
+    utc.with_hour(0)
+        .unwrap()
+        .with_minute(0)
+        .unwrap()
+        .with_second(0)
+        .unwrap()
+        .with_nanosecond(0)
+        .unwrap()
+        .timestamp()
 }

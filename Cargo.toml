@@ -18,15 +18,13 @@ default-features = false
 features = ["napi-6"]
 
 
-
 [dependencies]
 
 
+diesel = { version = "2.1.0", features = ["sqlite", "numeric"] }
+diesel_migrations = "2.1.0"
 
-diesel = { version = "1.4.0", features = ["sqlite"] }
-diesel_migrations = "1.4.0"
-
-neon-serde2 = {path = "../neon-serde", version = "0.10.0"}
+neon-serde2 = { path = "../neon-serde", version = "0.10.0" }
 
 
 serde = { version = "1.0", features = ["derive"] }
@@ -40,3 +38,6 @@ reqwest = "0.9.17"
 # For migrating to new ids
 bs58 = "0.3.1"
 sha-1 = "0.9.1"
+
+# to get correct timestamp for today
+chrono = "0.4.31"

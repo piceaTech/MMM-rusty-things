@@ -55,7 +55,7 @@ pub struct Task {
     #[serde(rename = "ato", default, deserialize_with = "deserialize_some")]
     pub unknown10: Option<Option<i32>>,
     #[serde(rename = "sb", default, deserialize_with = "deserialize_some")]
-    pub unknown11: Option<Option<i32>>,
+    pub start_bucket: Option<Option<i32>>,
 
     #[serde(rename = "ix", default, deserialize_with = "deserialize_some")]
     pub index: Option<Option<i32>>,
@@ -133,7 +133,7 @@ impl Task {
             && self.unknown8.is_none()
             && self.unknown9.is_none()
             && self.unknown10.is_none()
-            && self.unknown11.is_none()
+            && self.start_bucket.is_none()
             && self.index.is_none()
             && self.creation_date.is_none()
             && self.modification_date.is_none()
