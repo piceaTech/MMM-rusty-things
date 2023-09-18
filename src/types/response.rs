@@ -1,10 +1,8 @@
-use std::collections::HashMap;
 use super::task::Task;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Response {
     pub items: Vec<HashMap<String, ItemWrapper>>,
     #[serde(rename = "current-item-index")]
@@ -17,13 +15,12 @@ pub struct Response {
     #[serde(rename = "latest-total-content-size")]
     pub latest_total_content_size: u32,
 }
-#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ItemWrapper {
     #[serde(rename = "p")]
     pub item: Option<Task>,
     #[serde(rename = "e")]
-    pub item_type: String,
+    pub entity: String,
     #[serde(rename = "t")]
     pub t: u8,
 }

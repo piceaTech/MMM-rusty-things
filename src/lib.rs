@@ -84,7 +84,7 @@ fn load_env(dirname: &str) {
     env::set_var("DATABASE_URL", database_url.to_str().unwrap());
 }
 fn parse_file(file_contents: &str) -> Result<bool, Box<dyn std::error::Error>> {
-    let response: Response = serde_json::from_str(file_contents)?;
+    let _response: Response = serde_json::from_str(file_contents)?;
     Ok(true)
 }
 fn update_db() -> Result<u32, Box<dyn std::error::Error>> {
@@ -135,7 +135,7 @@ fn insert_entries_into_db(
     for items_hash in resp.items.into_iter() {
         for (key, value) in items_hash.into_iter() {
             let canonical = sql::get_canonical_id(key);
-            if !value.item_type.starts_with("Task") {
+            if !value.entity.starts_with("Task") {
                 continue;
             }
             if value.item.is_none() {
@@ -147,7 +147,9 @@ fn insert_entries_into_db(
             }
             let mut item = value.item.clone().unwrap();
             item.uuid = Some(canonical.to_owned());
-            if item.is_empty() {
+            if item.is_empty()
+                && (value.entity == "Task2" || value.entity == "Task3" || value.entity == "Task4")
+            {
                 delete(&connection, item)?;
             } else {
                 insert_or_update(&connection, item)?;
