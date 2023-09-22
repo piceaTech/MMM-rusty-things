@@ -268,36 +268,33 @@ fn get_today_tasks(
 ) -> Result<Vec<sql::task::Task>, Box<dyn std::error::Error + Send + Sync + 'static>> {
     let mut connection = establish_connection()?;
     use sql::task::tasks::dsl::*;
-    let today = get_today_0_0_timestamp();
-    let db_entries = tasks
+    let today: f64 = get_today_0_0_timestamp() as f64;
+    let mut db_entries_today = tasks
         .filter(trashed.eq(false))
         .filter(type_project.eq(0))
         .filter(start.eq(1))
         .filter(status.eq(0))
         .filter(today_index_reference_date.is_not_null())
-        // .filter(today_index_reference_date.ne("asd").and(start_bucket.ne(1)))
+        .filter(today_index_reference_date.ne(&today).or(start_bucket.ne(1)))
         .order((today_index_reference_date.desc(), today_index.asc()))
         .load::<sql::task::Task>(&mut connection)
-        .expect("Error loading Task");
-    // select *  from TMTask where
-    // -- select title, trashed, type, start, status, todayIndexReferenceDate, todayIndex, startBucket,  userModificationDate from TMTask where
-    // trashed = false
-    //  and "type" = 0
-    //  and start = 1
-    //  and status=0
-    //  and todayIndexReferenceDate is not null
-    //  and not (todayIndexReferenceDate = 132618496 and startBucket = 1)
-    // order by todayIndexReferenceDate desc,  todayIndex asc
-    // ;
-
-    // select *  from TMTask where
-    // trashed = false
-    //  and "type" = 0
-    //  and start = 1
-    //  and status=0
-    //  and (todayIndexReferenceDate = 132618496 and startBucket = 1)
-    // order by todayIndexReferenceDate desc,  todayIndex asc
-    Ok(db_entries)
+        .expect("Error loading Task1");
+    let mut db_entries_evening = tasks
+        .filter(trashed.eq(false))
+        .filter(type_project.eq(0))
+        .filter(start.eq(1))
+        .filter(status.eq(0))
+        .filter(today_index_reference_date.is_not_null())
+        .filter(
+            today_index_reference_date
+                .eq(&today)
+                .and(start_bucket.eq(1)),
+        )
+        .order((today_index_reference_date.desc(), today_index.asc()))
+        .load::<sql::task::Task>(&mut connection)
+        .expect("Error loading Task2");
+    db_entries_today.append(&mut db_entries_evening);
+    Ok(db_entries_today)
 }
 
 fn get_tomorrow_tasks(

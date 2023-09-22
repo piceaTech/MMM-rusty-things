@@ -5,12 +5,9 @@ table! {
     }
 }
 
-
-#[derive(Clone)]
-#[derive(Insertable)]
-#[derive(Queryable, Identifiable, AsChangeset)]
-#[primary_key(key)]
-#[table_name="meta"]
+#[derive(Clone, Insertable, Queryable, Identifiable, AsChangeset)]
+#[diesel(primary_key(key))]
+#[diesel(table_name = meta)]
 pub struct Meta {
     pub key: String,
     pub value: String,
