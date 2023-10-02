@@ -50,9 +50,9 @@ After that either compile the native module locally on the pi or cross-compile f
   1. `brew install armv7-unknown-linux-gnueabihf`
 1. Add rust target
   1. `rustup target add arm-unknown-linux-gnueabihf`
-1. Copy the following dependencies as `.deb`s into `/pi_deps`
+1. Copy the following dependencies as `.deb`s into `/pi_deps` (Make sure the version installed on pi are the same as these downloaded versions or else errors might occur)
   1. ssl: http://ftp.debian.org/debian/pool/main/o/openssl1.0/libssl1.0-dev_1.0.2r-1~deb9u1_armhf.deb
-  1. sqlite: http://ftp.debian.org/debian/pool/main/s/sqlite3/libsqlite3-dev_3.16.2-5+deb9u1_armhf.deb
+  1. sqlite: http://ftp.debian.org/debian/pool/main/s/sqlite3/libsqlite3-dev_3.27.2-3+deb10u1_armhf.deb
   1. gcc: http://ftp.debian.org/debian/pool/main/g/gcc-12/libgcc-12-dev_12.1.0-2_armhf.deb
 1. unpack all deps into folders
   ```
