@@ -1,5 +1,5 @@
 RUSTFLAGS="-L $PWD/pi_deps/usr/lib/gcc/arm-linux-gnueabihf/12/" \
-CC="armv7-unknown-linux-gnueabihf-cc" \
+# CC="armv7-unknown-linux-gnueabihf-cc" \ # apparrently no longer needed
 PKG_CONFIG_ALLOW_CROSS=true \
 OPENSSL_INCLUDE_DIR="$PWD/pi_deps/usr/include" \
 OPENSSL_LIB_DIR="$PWD/pi_deps/usr/lib/arm-linux-gnueabihf" \
